@@ -73,7 +73,9 @@ export default {
                     login: this.loginObject.login,
                     password: this.loginObject.password,
                 });
-                localStorage.setItem('token', response.data.token);
+                console.log('Response user:', response.data.user); // добавьте
+                const userData = response.data.user;
+                localStorage.setItem('user', JSON.stringify(userData));
                 this.$router.push('/profile');
             } catch (err) {
                 alert('Ошибка входа: ' + (err.response?.data?.message || err.message));

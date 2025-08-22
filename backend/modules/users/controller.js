@@ -44,7 +44,21 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Неверный логин или пароль' });
         }
 
-        res.json({ message: 'Успешный вход' });
+        const { _id, login: userLogin, username, phone, totalCount, countGames, countWins, createdAt } = user;
+
+        res.json({
+            message: 'Успешный вход',
+            user: {
+                id: _id,
+                login: userLogin,
+                username,
+                phone,
+                totalCount,
+                countGames,
+                countWins,
+                createdAt,
+            },
+        });
     } catch (err) {
         res.status(500).json({ message: 'Ошибка сервера' });
     }
