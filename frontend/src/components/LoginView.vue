@@ -15,10 +15,10 @@
             <div v-if="activeTab === 'login'">
                 <form class="needs-validation" @submit.prevent="handleLogin" novalidate>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Логин" v-model="loginObject.login" required />
+                        <input type="text" class="form-control bg-dark text-light" placeholder="Логин" v-model="loginObject.login" required />
                     </div>
                     <div class="form-group">
-                        <input type="password" class="form-control" placeholder="Пароль" v-model="loginObject.password" required />
+                        <input type="password" class="form-control bg-dark text-light" placeholder="Пароль" v-model="loginObject.password" required />
                     </div>
                     <button class="btn btn-primary btn-block" type="submit">Войти</button>
                 </form>
@@ -27,16 +27,16 @@
             <div v-if="activeTab === 'register'">
                 <form class="needs-validation" @submit.prevent="handleRegister" novalidate>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Логин" v-model="registerObject.login" required />
+                        <input type="text" class="form-control bg-dark text-light" placeholder="Логин" v-model="registerObject.login" required />
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Имя пользователя" v-model="registerObject.username" required />
+                        <input type="text" class="form-control bg-dark text-light" placeholder="Имя пользователя" v-model="registerObject.username" required />
                     </div>
                     <div class="form-group">
-                        <input type="password" class="form-control" placeholder="Пароль" v-model="registerObject.password" required />
+                        <input type="password" class="form-control bg-dark text-light" placeholder="Пароль" v-model="registerObject.password" required />
                     </div>
                     <div class="form-group">
-                        <input type="tel" class="form-control" placeholder="Телефон" v-model="registerObject.phone" />
+                        <input type="tel" class="form-control bg-dark text-light" placeholder="Телефон" v-model="registerObject.phone" />
                     </div>
                     <button class="btn btn-success btn-block" type="submit">Регистрация</button>
                 </form>
