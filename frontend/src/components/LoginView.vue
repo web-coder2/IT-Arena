@@ -5,10 +5,10 @@
 
             <ul class="nav nav-tabs justify-content-center mb-4" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link" :class="{ active: activeTab === 'login' }" @click="activeTab = 'login'" href="#">Войти</a>
+                    <a class="nav-link" :class="{ active: activeTab === 'login' }" @click.prevent="activeTab = 'login'" href="#">Войти</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" :class="{ active: activeTab === 'register' }" @click="activeTab = 'register'" href="#">Регистрация</a>
+                    <a class="nav-link" :class="{ active: activeTab === 'register' }" @click.prevent="activeTab = 'register'" href="#">Регистрация</a>
                 </li>
             </ul>
 
@@ -46,6 +46,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
     name: 'login',
     data() {
@@ -65,11 +67,31 @@ export default {
         };
     },
     methods: {
-        handleLogin() {
-            alert(`Логин: ${this.loginObject.login}\nПароль: ${this.loginObject.password}`);
+        async handleLogin() {
+            try {
+                const response = await axios.post('http://localhost:3000/api/users/login', {
+                    login: this.loginObject.login,
+                    password: this.loginObject.password,
+                });
+                localStorage.setItem('token', response.data.token);
+                this.$router.push('/profile');
+            } catch (err) {
+                alert('Ошибка входа: ' + (err.response?.data?.message || err.message));
+            }
         },
-        handleRegister() {
-            alert(`Регистрация:\nЛогин: ${this.registerObject.login}\nИмя: ${this.registerObject.username}\nПароль: ${this.registerObject.password}\nТелефон: ${this.registerObject.phone}`);
+        async handleRegister() {
+            try {
+                const response = await axios.post('http://localhost:3000/api/users/register', {
+                    login: this.registerObject.login,
+                    username: this.registerObject.username,
+                    password: this.registerObject.password,
+                    phone: this.registerObject.phone,
+                });
+                alert('Регистрация прошла успешно! Войдите в систему.');
+                this.activeTab = 'login';
+            } catch (err) {
+                alert('Ошибка регистрации: ' + (err.response?.data?.message || err.message));
+            }
         },
     },
 };
