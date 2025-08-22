@@ -30,7 +30,4 @@
 .nav-link {
     color: #fff;
 }
-.nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
 </style>
