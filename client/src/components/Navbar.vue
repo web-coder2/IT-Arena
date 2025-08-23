@@ -18,12 +18,21 @@
                     <a class="nav-link" href="/history">Моя история игр</a>
                 </li>
             </ul>
+
+            <ul class="navbar-nav ml-auto align-items-center">
+                <li class="nav-item">
+                    <a href="/profile" class="nav-link d-flex align-items-center">
+                        <i class="fas fa-user-circle fa-lg mr-2"></i>
+                        <span>Профиль</span>
+                    </a>
+                </li>
+            </ul>
         </div>
     </nav>
 </template>
 
 <style scoped>
-/* Можно дополнительно стилизовать, например: */
+/* Дополнительная стилизация */
 .navbar {
     background-color: #191616 !important; /* темный фон */
 }

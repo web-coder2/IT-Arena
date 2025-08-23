@@ -17,21 +17,44 @@
 <script>
 import Navbar from './Navbar.vue';
 
+import io from 'socket.io-client';
+
 export default {
-    name: 'GameView',
+    data() {
+        return {
+            socket: null,
+            game: null,
+            user: null,
+            loading: true,
+        };
+    },
     components: {
         Navbar,
     },
-    data() {
-        return {
-            title: 'Вкладка играть',
-            user: null,
-        };
-    },
-    beforeMount() {
+    async beforeMount() {
+        this.socket = io('http://localhost:3000');
+
         const userData = localStorage.getItem('user');
         if (userData) {
             this.user = JSON.parse(userData);
+        }
+
+        const gameId = 'some-game-id';
+        this.socket.emit('joinGame', { gameId, username: this.user.username });
+
+        this.socket.on('updateGame', (gameData) => {
+            this.game = gameData;
+            this.loading = false;
+        });
+    },
+    methods: {
+        takeCard() {
+            this.socket.emit('takeCard', { gameId: 'some-game-id', userId: this.user.id });
+        },
+    },
+    beforeDestroy() {
+        if (this.socket) {
+            this.socket.disconnect();
         }
     },
 };
