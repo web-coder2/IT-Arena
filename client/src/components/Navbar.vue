@@ -20,6 +20,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/history">Моя история игр</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/servers">Список серверов</a>
+                </li>
             </ul>
 
             <ul class="navbar-nav ml-auto align-items-center">
