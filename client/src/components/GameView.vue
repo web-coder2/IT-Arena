@@ -3,7 +3,8 @@
     <div class="d-flex vh-100">
         <div class="bg-dark text-white d-flex flex-column p-3 menu" style="width: 15%">
             <h3 class="mb-3 text-center font-italic">Меню игрока</h3>
-            <h4 class="text-primary text-center mb-3">Игрок: {{ user.username }}</h4>
+            <h4 class="text-light text-center mb-3">Игрок: {{ user.username }}</h4>
+            <h4 class="text-light">Сейчас игроков в комнате: {{ playersCount }}</h4>
             <hr class="custom-hr" />
             <button class="btn btn-danger mb-2 w-100">Взять карту</button>
             <button class="btn btn-danger mb-2 w-100">Взять карту</button>
@@ -26,6 +27,7 @@ export default {
             game: null,
             user: null,
             loading: true,
+            playersCount: 0,
         };
     },
     components: {
@@ -39,12 +41,32 @@ export default {
             this.user = JSON.parse(userData);
         }
 
-        const gameId = 'some-game-id';
-        this.socket.emit('joinGame', { gameId, username: this.user.username });
+        // Запросим список всех комнат
+        this.socket.emit('getAllGames');
 
-        this.socket.on('updateGame', (gameData) => {
-            this.game = gameData;
-            this.loading = false;
+        // Обработка получения списка
+        this.socket.on('allGamesList', (games) => {
+            if (games.length > 0) {
+                // выбираем случайную комнату
+                const randomIndex = Math.floor(Math.random() * games.length);
+                const selectedGame = games[randomIndex];
+
+                const gameId = selectedGame.id;
+
+                // присоединяемся к выбранной комнате
+                this.socket.emit('joinGame', {
+                    gameId: gameId,
+                    username: this.user.username,
+                    // userId можно передавать при необходимости
+                });
+            } else {
+                console.log('Нет доступных игр');
+            }
+        });
+
+        this.socket.on('updateGame', ({ game, playersCount }) => {
+            this.game = game;
+            this.playersCount = playersCount;
         });
     },
     methods: {
