@@ -1,44 +1,107 @@
-// импортируем маршруты и контроллеры
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const http = require('http');
 const socketIO = require('socket.io');
 
 require('dotenv').config();
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIO(server, {
-    cors: {
-        origin: '*', // или ваш фронтенд URL
-        methods: ['GET', 'POST'],
-    },
-});
 
 app.use(cors());
 app.use(express.json());
 
+const server = require('http').createServer(app);
+const io = new socketIO.Server(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+    },
+});
+
+// Остальной код — маршруты и логика WebSocket (как у вас)
 const userRoutes = require('./modules/users/route');
 app.use('/api/users', userRoutes);
 
-const gameRoutes = require('./modules/game/route');
-app.use('/api/games', gameRoutes);
+// Логика комнат
+const rooms = [];
 
-const gameController = require('./modules/game/controller');
-gameController(io);
+function createRoom() {
+    const timestamp = Date.now();
+    const roomName = `room_${timestamp}`;
+    const newRoom = {
+        name: roomName,
+        members: 0,
+        createdAt: timestamp,
+    };
+    rooms.push(newRoom);
+    return newRoom;
+}
+
+function getActiveRooms() {
+    const now = Date.now();
+    return rooms.map((room) => {
+        const durationMinutes = Math.floor((now - room.createdAt) / 60000);
+        return {
+            name: room.name,
+            members: room.members,
+            durationMinutes,
+        };
+    });
+}
+
+function setupSocketHandlers(io) {
+    const MAX_PLAYERS_PER_ROOM = 4;
+
+    io.on('connection', (socket) => {
+        console.log(`Клиент подключился: ${socket.id}`);
+
+        socket.on('joinRoom', ({ username }) => {
+            let roomToJoin = rooms.find((r) => r.members < MAX_PLAYERS_PER_ROOM);
+            if (!roomToJoin) {
+                roomToJoin = createRoom();
+            }
+            socket.join(roomToJoin.name);
+            roomToJoin.members++;
+            socket.emit('joinedRoom', { roomName: roomToJoin.name });
+            io.emit('roomsList', getActiveRooms());
+            console.log(`${username} присоединился к комнате ${roomToJoin.name}`);
+        });
+
+        socket.on('leaveRoom', ({ roomName, username }) => {
+            socket.leave(roomName);
+            const room = rooms.find((r) => r.name === roomName);
+            if (room) {
+                room.members = Math.max(0, room.members - 1);
+                if (room.members === 0) {
+                    const index = rooms.indexOf(room);
+                    if (index !== -1) rooms.splice(index, 1);
+                }
+            }
+            io.to(roomName).emit('userLeft', { username, roomName });
+            io.emit('roomsList', getActiveRooms());
+        });
+
+        socket.on('disconnect', () => {
+            // Обработка отключения, если нужно
+        });
+    });
+}
+
+app.get('/api/rooms/getInfo', async (req, res) => {
+    let infoDataRooms = getActiveRooms();
+    res.status(200).json({
+        infoDataRooms,
+    });
+});
+
+setupSocketHandlers(io);
 
 const PORT = process.env.PORT || 3000;
 
-async function startServer() {
+async function start() {
     try {
-        const MONGO_USER = process.env.DATABASE_USERNAME;
-        const MONGO_PASS = process.env.DATABASE_PASSWORD;
-        const MONGO_URL = process.env.DATABASE_URL;
-        const MONGO_PORT = process.env.DATABASE_PORT;
-        const DATABASE_NAME = process.env.DATABASE_NAME;
-
-        const uri = `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_URL}:${MONGO_PORT}/${DATABASE_NAME}?authSource=admin`;
+        const { DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_URL, DATABASE_PORT, DATABASE_NAME } = process.env;
+        const uri = `mongodb://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_URL}:${DATABASE_PORT}/${DATABASE_NAME}?authSource=admin`;
         await mongoose.connect(uri);
         console.log('MongoDB подключен');
 
@@ -51,4 +114,4 @@ async function startServer() {
     }
 }
 
-startServer();
+start();
